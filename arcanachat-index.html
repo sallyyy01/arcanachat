@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ArcanaChat"/>
+<meta name="theme-color" content="#0a0812"/>
+<title>ArcanaChat</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0812;--surface:#120f1e;--surface2:#1a1628;--border:#2d2545;
+  --accent:#c084fc;--accent2:#818cf8;--gold:#fbbf24;
+  --text:#e2d9f3;--muted:#7c6fa0;--danger:#f87171;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif}
+#app{height:100%;display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative;overflow:hidden}
+
+/* ── SCREENS ─────────────────────────────────────── */
+.screen{display:none;flex-direction:column;height:100%;animation:fadeIn .18s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+
+/* ── NAV ─────────────────────────────────────────── */
+.nav{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-top) + 14px) 20px 14px;
+  background:linear-gradient(180deg,rgba(10,8,18,.98) 80%,transparent);
+  position:sticky;top:0;z-index:10;flex-shrink:0}
+.nav-title{font-family:'Cinzel Decorative',serif;font-size:15px;
+  background:linear-gradient(135deg,#e879f9,#818cf8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  color:var(--muted);cursor:pointer;padding:8px 14px;font-family:'Crimson Pro',serif;
+  font-size:13px;transition:all .2s}
+.nav-btn:active{border-color:var(--accent);color:var(--accent)}
+
+/* ── SCROLLABLE BODY ─────────────────────────────── */
+.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.scroll-body::-webkit-scrollbar{display:none}
+
+/* ── HOME ────────────────────────────────────────── */
+.home-body{padding:0 18px 120px}
+.hero{text-align:center;padding:28px 0 20px}
+.orb{width:72px;height:72px;margin:0 auto 14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#e879f9,#7c3aed 50%,#1e1b4b);
+  box-shadow:0 0 40px #c084fc55,0 0 80px #7c3aed22;
+  animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 40px #c084fc55,0 0 80px #7c3aed22}
+  50%{box-shadow:0 0 60px #c084fc88,0 0 100px #7c3aed44}}
+.hero h1{font-family:'Cinzel Decorative',serif;font-size:20px;line-height:1.35;
+  background:linear-gradient(135deg,#e879f9,#818cf8,#f472b6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.hero p{color:var(--muted);font-size:14px;font-style:italic}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  margin:20px 0;opacity:.25}
+.section-label{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:2px;
+  color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+
+/* ── CHARACTER CARD ──────────────────────────────── */
+.char-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .2s;
+  display:flex;align-items:center;gap:12px;position:relative}
+.char-card:active{border-color:var(--accent)}
+.char-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--border);flex-shrink:0}
+.char-avatar-ph{width:54px;height:54px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  background:linear-gradient(135deg,#1e1b4b,#2d1f5e);border:2px solid var(--border)}
+.char-info{flex:1;min-width:0}
+.char-name{font-size:16px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.char-desc{font-size:12px;color:var(--muted);font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{background:rgba(192,132,252,.12);border:1px solid rgba(192,132,252,.25);
+  border-radius:20px;padding:2px 9px;font-size:10px;color:var(--accent)}
+.tag.blue{background:rgba(129,140,248,.12);border-color:rgba(129,140,248,.25);color:var(--accent2)}
+.char-del{background:none;border:none;font-size:16px;cursor:pointer;
+  padding:8px;border-radius:8px;color:var(--muted);flex-shrink:0}
+
+/* ── FAB ─────────────────────────────────────────── */
+.fab{position:fixed;bottom:calc(var(--safe-bottom) + 22px);right:22px;z-index:20;
+  width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#c084fc);
+  box-shadow:0 4px 20px #7c3aed66;color:#fff;font-size:30px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s;line-height:1}
+.fab:active{transform:scale(.92)}
+
+/* ── MODAL ───────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;
+  display:none;align-items:flex-end;animation:fadeOverlay .2s}
+.overlay.open{display:flex}
+@keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;width:100%;
+  max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:20px 20px calc(var(--safe-bottom) + 28px);
+  border:1px solid var(--border);border-bottom:none;
+  animation:slideUp .28s cubic-bezier(.32,.72,0,1)}
+.modal::-webkit-scrollbar{display:none}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--accent);
+  margin-bottom:22px;text-align:center}
+
+/* ── FORM ────────────────────────────────────────── */
+.form-group{margin-bottom:16px}
+.form-label{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:1.5px;
+  color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--surface2);
+  border:1px solid var(--border);border-radius:12px;padding:12px 15px;
+  color:var(--text);font-family:'Crimson Pro',serif;font-size:16px;
+  outline:none;transition:border-color .2s;-webkit-appearance:none;resize:none}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--accent)}
+.form-textarea{min-height:85px;line-height:1.5}
+.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237c6fa0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+.form-select option{background:var(--surface2)}
+
+/* Avatar upload */
+.avatar-upload{display:flex;align-items:flex-start;gap:14px}
+.avatar-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--border);flex-shrink:0}
+.avatar-ph{width:72px;height:72px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:30px;
+  background:linear-gradient(135deg,#1e1b4b,#2d1f5e);border:2px dashed var(--border);cursor:pointer}
+.upload-side{flex:1;display:flex;flex-direction:column;gap:8px}
+.upload-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;color:var(--text);cursor:pointer;font-family:'Crimson Pro',serif;
+  font-size:14px;text-align:left}
+.emoji-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.emoji-opt{font-size:20px;padding:5px;border-radius:8px;border:1px solid transparent;cursor:pointer}
+.emoji-opt.sel{border-color:var(--accent);background:rgba(192,132,252,.15)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:6px 13px;font-size:13px;cursor:pointer;color:var(--muted);transition:all .15s}
+.chip.sel{background:rgba(192,132,252,.2);border-color:var(--accent);color:var(--accent)}
+
+/* Buttons */
+.btn{width:100%;padding:15px;border:none;border-radius:12px;font-size:17px;
+  font-family:'Crimson Pro',serif;cursor:pointer;font-weight:600;margin-top:8px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#7c3aed,#c084fc);color:#fff;
+  box-shadow:0 4px 15px #7c3aed33}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+
+/* ── CHAT ────────────────────────────────────────── */
+#chat-screen{overflow:hidden}
+.chat-header{display:flex;align-items:center;gap:12px;flex-shrink:0;
+  padding:calc(var(--safe-top) + 12px) 16px 13px;
+  background:rgba(10,8,18,.97);border-bottom:1px solid var(--border)}
+.back-btn{background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:26px;padding:4px;line-height:1}
+.chat-hav{width:42px;height:42px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--accent);box-shadow:0 0 12px #c084fc33;flex-shrink:0}
+.chat-hav-ph{width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  background:linear-gradient(135deg,#1e1b4b,#2d1f5e);border:2px solid var(--accent)}
+.chat-hinfo{flex:1;min-width:0}
+.chat-hname{font-size:16px;font-weight:600;color:var(--text)}
+.chat-hstatus{font-size:11px;color:var(--accent2);font-style:italic}
+.scene-btn{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);
+  border-radius:10px;padding:7px 12px;color:var(--gold);font-size:12px;
+  font-family:'Crimson Pro',serif;cursor:pointer}
+
+.messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;padding:16px 14px 8px;display:flex;flex-direction:column;gap:12px}
+.messages::-webkit-scrollbar{display:none}
+
+.msg{max-width:82%;animation:msgIn .22s cubic-bezier(.32,.72,0,1)}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+.msg.user{align-self:flex-end}
+.msg.ai{align-self:flex-start}
+.bubble{padding:11px 15px;border-radius:18px;font-size:15px;line-height:1.55;word-break:break-word}
+.msg.user .bubble{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;
+  border-bottom-right-radius:4px}
+.msg.ai .bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  border-bottom-left-radius:4px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:3px;padding:0 4px}
+.msg.user .msg-time{text-align:right}
+
+.typing-indicator{display:flex;gap:5px;align-items:center;
+  padding:13px 15px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:18px;border-bottom-left-radius:4px;width:fit-content;align-self:flex-start}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);
+  animation:bounce 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}
+  30%{transform:translateY(-6px);opacity:1}}
+
+.scenario-badge{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);
+  border-radius:12px;padding:10px 14px;text-align:center;
+  font-size:12px;color:var(--gold);font-style:italic}
+
+.chat-input-area{padding:10px 14px calc(var(--safe-bottom) + 14px);
+  background:rgba(10,8,18,.97);border-top:1px solid var(--border);flex-shrink:0}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+.chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);
+  border-radius:20px;padding:11px 17px;color:var(--text);font-family:'Crimson Pro',serif;
+  font-size:16px;outline:none;resize:none;max-height:110px;transition:border-color .2s;
+  line-height:1.4;-webkit-appearance:none}
+.chat-input:focus{border-color:var(--accent)}
+.send-btn{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#c084fc);color:#fff;font-size:18px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .15s;box-shadow:0 3px 10px #7c3aed44}
+.send-btn:active:not(:disabled){transform:scale(.92)}
+.send-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── SCENARIO ITEMS ──────────────────────────────── */
+.scene-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:9px;cursor:pointer;transition:border-color .15s}
+.scene-item:active,.scene-item.sel{border-color:var(--gold);background:rgba(251,191,36,.05)}
+.scene-title{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:3px}
+.scene-desc{font-size:12px;color:var(--muted);font-style:italic}
+
+/* ── SETUP / API KEY ─────────────────────────────── */
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin:16px 18px 10px}
+.setup-title{font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--accent);margin-bottom:10px}
+.setup-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+.setup-link{color:var(--accent2);text-decoration:underline;font-size:14px}
+.key-row{display:flex;gap:8px;align-items:center}
+.eye-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;cursor:pointer;font-size:16px;flex-shrink:0}
+.step-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.step-list li{font-size:14px;color:var(--muted);line-height:1.6;padding-left:4px}
+
+/* ── EMPTY STATE ─────────────────────────────────── */
+.empty{text-align:center;padding:50px 20px;color:var(--muted);font-style:italic}
+.empty-icon{font-size:44px;margin-bottom:10px;opacity:.5}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ HOME SCREEN ══════════════════════════════════ -->
+  <div class="screen active" id="home-screen">
+    <nav class="nav">
+      <span class="nav-title">✦ ArcanaChat</span>
+      <button class="nav-btn" onclick="showSetup()">⚙ API Key</button>
+    </nav>
+    <div class="scroll-body">
+      <div class="home-body">
+        <div class="hero">
+          <div class="orb"></div>
+          <h1>Dunia Tanpa Batas</h1>
+          <p>Ciptakan karakter, hidupkan cerita</p>
+        </div>
+        <div class="divider"></div>
+        <div class="section-label">Karaktermu</div>
+        <div id="char-list"></div>
+      </div>
+    </div>
+    <button class="fab" onclick="openCreate()">+</button>
+  </div>
+
+  <!-- ══ CHAT SCREEN ══════════════════════════════════ -->
+  <div class="screen" id="chat-screen">
+    <div class="chat-header">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <div id="chat-avatar-wrap"></div>
+      <div class="chat-hinfo">
+        <div class="chat-hname" id="chat-name">—</div>
+        <div class="chat-hstatus" id="chat-status">● hadir</div>
+      </div>
+      <button class="scene-btn" onclick="openScenario()">📜 Skenario</button>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="chat-input-area">
+      <div class="input-row">
+        <textarea class="chat-input" id="chat-input" rows="1"
+          placeholder="Katakan sesuatu..."
+          oninput="autoResize(this)"
+          onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Create Character ══════════════════════ -->
+  <div class="overlay" id="create-overlay" onclick="closeCreate(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">✦ Ciptakan Karakter</div>
+
+      <div class="form-group">
+        <label class="form-label">Avatar</label>
+        <div class="avatar-upload">
+          <div id="av-preview" class="avatar-ph" onclick="document.getElementById('av-file').click()">🧙‍♀️</div>
+          <div class="upload-side">
+            <button class="upload-btn" onclick="document.getElementById('av-file').click()">📷 Upload Foto</button>
+            <input type="file" id="av-file" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+            <div class="emoji-row" id="emoji-row"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nama Karakter</label>
+        <input class="form-input" id="f-name" placeholder="contoh: Aria Stormborn"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Deskripsi Kepribadian</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Ceritakan kepribadian, latar belakang, dan keunikan karakter ini..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sifat Karakter</label>
+        <div class="chips" id="trait-chips"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Gaya Bicara</label>
+        <select class="form-select" id="f-lang">
+          <option>Bahasa Indonesia</option>
+          <option>Bahasa Inggris</option>
+          <option>Formal</option>
+          <option>Santai / Gaul</option>
+          <option>Puitis</option>
+          <option>Kuno/Klasik</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveCharacter()">✦ Ciptakan Karakter</button>
+      <button class="btn btn-secondary" onclick="closeCreate()">Batal</button>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Scenario ══════════════════════════════ -->
+  <div class="overlay" id="scene-overlay" onclick="closeScenario(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">📜 Pilih Skenario</div>
+      <div id="scene-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: API Key Setup ════════════════════════ -->
+  <div class="overlay" id="setup-overlay" onclick="closeSetup(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🔑 Anthropic API Key</div>
+
+      <div class="form-group">
+        <div class="setup-desc">
+          ArcanaChat menggunakan Claude AI dari Anthropic.<br/>
+          Kamu perlu API key untuk menggunakannya.<br/><br/>
+          <a class="setup-link" href="https://console.anthropic.com/settings/keys" target="_blank">
+            → Dapatkan API key gratis di sini
+          </a>
+        </div>
+        <label class="form-label">Masukkan API Key</label>
+        <div class="key-row">
+          <input class="form-input" id="api-key-input" type="password"
+            placeholder="sk-ant-api03-..." style="flex:1;font-family:monospace"/>
+          <button class="eye-btn" onclick="toggleKey()">👁</button>
+        </div>
+      </div>
+
+      <div class="setup-card" style="margin:0 0 8px;padding:16px">
+        <div class="setup-title" style="font-size:12px;margin-bottom:10px">Cara mendapatkan API key:</div>
+        <ol class="step-list">
+          <li>1. Buka console.anthropic.com</li>
+          <li>2. Daftar / login akun Anthropic</li>
+          <li>3. Masuk ke Settings → API Keys</li>
+          <li>4. Klik "Create Key" lalu copy</li>
+          <li>5. Paste di kolom di atas</li>
+        </ol>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveApiKey()">💾 Simpan API Key</button>
+      <button class="btn btn-secondary" onclick="closeSetup()">Tutup</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────
+const TRAITS = ['Penyayang','Misterius','Ceria','Dingin','Bijaksana','Nakal','Protektif','Pemalu','Percaya Diri','Melankolis','Optimis','Sarkastis'];
+const EMOJIS = ['🧙‍♀️','🧝‍♀️','🧚‍♀️','🦸‍♀️','🧜‍♀️','🧛‍♀️','🧞‍♀️','🕵️‍♀️','👸','🧑‍🎤','🤖','🦊','🐉','🌙','⭐','🌸'];
+const SCENARIOS = [
+  {id:'fantasy',title:'⚔️ Dunia Fantasi',desc:'Petualangan di kerajaan sihir penuh misteri dan bahaya'},
+  {id:'school',title:'🏫 Kehidupan Sekolah',desc:'Kisah remaja sehari-hari, persahabatan, dan perasaan pertama'},
+  {id:'scifi',title:'🚀 Sci-Fi & Masa Depan',desc:'Dunia teknologi canggih, luar angkasa, dan AI'},
+  {id:'romance',title:'💕 Drama Romantis',desc:'Pertemuan tak terduga dan kisah cinta yang menggetarkan'},
+  {id:'mystery',title:'🔍 Misteri & Detektif',desc:'Memecahkan kasus gelap di kota yang penuh rahasia'},
+  {id:'daily',title:'☀️ Kehidupan Biasa',desc:'Percakapan kasual dan interaksi sehari-hari yang hangat'},
+];
+
+// ── STATE ────────────────────────────────────────────
+let characters = [];
+let activeChar = null;
+let activeScenario = null;
+let isTyping = false;
+let formTraits = [];
+let formEmoji = EMOJIS[0];
+let formAvatar = null;
+let apiKey = '';
+
+// ── INIT ─────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  characters = JSON.parse(localStorage.getItem('ac_chars') || '[]');
+  if (!characters.length) characters = [{
+    id:'1',name:'Elara Moonwhisper',
+    description:'Seorang penyihir bijaksana dari hutan kuno yang hidup ribuan tahun. Ia menyimpan banyak rahasia tentang dunia dan selalu berbicara dengan penuh makna.',
+    traits:['Misterius','Bijaksana','Melankolis'],language:'Puitis',avatar:null,emoji:'🧙‍♀️',history:[]
+  }];
+  apiKey = localStorage.getItem('ac_apikey') || '';
+  if (apiKey) document.getElementById('api-key-input').value = apiKey;
+  renderChars();
+  buildTraitChips();
+  buildEmojiRow();
+  buildScenarioList();
+  if (!apiKey) setTimeout(showSetup, 600);
+});
+
+function saveChars() { localStorage.setItem('ac_chars', JSON.stringify(characters)); }
+
+// ── RENDER CHARS ─────────────────────────────────────
+function renderChars() {
+  const el = document.getElementById('char-list');
+  if (!characters.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">✨</div><p>Belum ada karakter.<br>Tekan + untuk menciptakan yang pertama.</p></div>';
+    return;
+  }
+  el.innerHTML = characters.map(c => `
+    <div class="char-card" onclick="openChat('${c.id}')">
+      ${c.avatar
+        ? `<img class="char-avatar" src="${c.avatar}" alt="${c.name}">`
+        : `<div class="char-avatar-ph">${c.emoji}</div>`}
+      <div class="char-info">
+        <div class="char-name">${c.name}</div>
+        <div class="char-desc">${c.description || '—'}</div>
+        <div class="tags">
+          ${c.traits.slice(0,2).map(t=>`<span class="tag">${t}</span>`).join('')}
+          <span class="tag blue">${c.language}</span>
+        </div>
+      </div>
+      <button class="char-del" onclick="event.stopPropagation();deleteChar('${c.id}')">✕</button>
+    </div>`).join('');
+}
+
+// ── CHAT ─────────────────────────────────────────────
+function openChat(id) {
+  activeChar = characters.find(c => c.id === id);
+  if (!activeChar) return;
+  activeScenario = null;
+  document.getElementById('chat-name').textContent = activeChar.name;
+  document.getElementById('chat-status').textContent = '● hadir';
+  const avWrap = document.getElementById('chat-avatar-wrap');
+  avWrap.innerHTML = activeChar.avatar
+    ? `<img class="chat-hav" src="${activeChar.avatar}" alt="">`
+    : `<div class="chat-hav-ph">${activeChar.emoji}</div>`;
+  renderMessages();
+  showScreen('chat-screen');
+  setTimeout(scrollBottom, 100);
+}
+
+function goHome() {
+  showScreen('home-screen');
+  activeChar = null;
+  activeScenario = null;
+}
+
+function renderMessages() {
+  const msgs = activeChar?.history || [];
+  const el = document.getElementById('messages');
+  if (!msgs.length) {
+    el.innerHTML = `<div class="empty" style="padding-top:40px"><div style="font-size:44px">${activeChar.emoji}</div><p style="margin-top:10px;font-style:italic;color:var(--muted)">"${activeChar.name} menunggumu..."<br>Mulailah percakapan.</p></div>`;
+    return;
+  }
+  el.innerHTML = (activeScenario ? `<div class="scenario-badge">${SCENARIOS.find(s=>s.id===activeScenario)?.title} — ${SCENARIOS.find(s=>s.id===activeScenario)?.desc}</div>` : '')
+    + msgs.map(m => `
+    <div class="msg ${m.role==='user'?'user':'ai'}">
+      <div class="bubble">${escHtml(m.content)}</div>
+      <div class="msg-time">${m.time||''}</div>
+    </div>`).join('');
+  scrollBottom();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+  if (!apiKey) { showSetup(); return; }
+
+  const userMsg = { role:'user', content:text, time:getTime() };
+  activeChar.history = [...(activeChar.history||[]), userMsg];
+  input.value = ''; input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+  renderMessages();
+  setTyping(true);
+
+  try {
+    const apiMsgs = activeChar.history.map(m => ({ role:m.role, content:m.content }));
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01' },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1000,
+        system: buildSystemPrompt(),
+        messages: apiMsgs
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const aiText = data.content?.map(b=>b.text||'').join('') || '...';
+    const aiMsg = { role:'assistant', content:aiText, time:getTime() };
+    activeChar.history = [...activeChar.history, aiMsg];
+    saveChars();
+  } catch(e) {
+    activeChar.history.push({ role:'assistant', content:`*Terjadi gangguan... ${e.message||'Coba lagi.'}*`, time:getTime() });
+  }
+  setTyping(false);
+  renderMessages();
+}
+
+function buildSystemPrompt() {
+  const s = SCENARIOS.find(sc=>sc.id===activeScenario);
+  return `Kamu adalah ${activeChar.name}, sebuah karakter dalam sebuah roleplay interaktif.
+
+KEPRIBADIAN & KARAKTER:
+${activeChar.description}
+
+SIFAT-SIFAT: ${activeChar.traits.join(', ')}
+
+GAYA BICARA: ${activeChar.language}
+
+${s ? `SKENARIO AKTIF: ${s.title} — ${s.desc}` : ''}
+
+INSTRUKSI PENTING:
+- Kamu HARUS selalu tetap dalam karakter sebagai ${activeChar.name}. Jangan pernah keluar dari peran.
+- Gunakan gaya bicara yang sesuai dengan karakter dan sifat yang ditentukan.
+- Respon harus terasa natural, ekspresif, dan imersif.
+- Jika gaya bicara "Puitis" atau "Kuno/Klasik", gunakan bahasa yang sesuai.
+- Jika ada skenario aktif, sesuaikan konteks cerita dengan skenario tersebut.
+- Boleh menggunakan deskripsi narasi dalam tanda *seperti ini* untuk ekspresi atau tindakan.
+- Jangan menyebutkan bahwa kamu adalah AI. Kamu adalah ${activeChar.name}.
+- Respon dalam bahasa yang sesuai (${activeChar.language}).`;
+}
+
+function setTyping(v) {
+  isTyping = v;
+  document.getElementById('chat-status').textContent = v ? 'sedang mengetik...' : '● hadir';
+  const msgs = document.getElementById('messages');
+  let t = document.getElementById('typing-el');
+  if (v) {
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'typing-el';
+      t.className = 'typing-indicator';
+      t.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+      msgs.appendChild(t);
+      scrollBottom();
+    }
+  } else { t?.remove(); }
+}
+
+// ── CREATE CHARACTER ──────────────────────────────────
+function buildTraitChips() {
+  document.getElementById('trait-chips').innerHTML = TRAITS.map(t =>
+    `<div class="chip" onclick="toggleTrait(this,'${t}')">${t}</div>`).join('');
+}
+
+function buildEmojiRow() {
+  document.getElementById('emoji-row').innerHTML = EMOJIS.map(e =>
+    `<span class="emoji-opt${e===EMOJIS[0]?' sel':''}" onclick="selectEmoji(this,'${e}')">${e}</span>`).join('');
+}
+
+function toggleTrait(el, t) {
+  if (formTraits.includes(t)) { formTraits = formTraits.filter(x=>x!==t); el.classList.remove('sel'); }
+  else { formTraits.push(t); el.classList.add('sel'); }
+}
+
+function selectEmoji(el, e) {
+  document.querySelectorAll('.emoji-opt').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  formEmoji = e; formAvatar = null;
+  const av = document.getElementById('av-preview');
+  if (av.tagName === 'IMG') {
+    av.outerHTML = `<div class="avatar-ph" id="av-preview" onclick="document.getElementById('av-file').click()">${e}</div>`;
+  } else { av.textContent = e; }
+}
+
+function handleAvatarUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    formAvatar = ev.target.result;
+    const old = document.getElementById('av-preview');
+    const img = document.createElement('img');
+    img.className = 'avatar-preview'; img.src = formAvatar; img.id = 'av-preview';
+    old.replaceWith(img);
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveCharacter() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Masukkan nama karakter!'); return; }
+  const newChar = {
+    id: Date.now().toString(), name,
+    description: document.getElementById('f-desc').value.trim(),
+    traits: [...formTraits],
+    language: document.getElementById('f-lang').value,
+    avatar: formAvatar, emoji: formEmoji, history: []
+  };
+  characters.push(newChar); saveChars(); renderChars();
+  closeCreate();
+  // reset
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-desc').value = '';
+  formTraits = []; formAvatar = null; formEmoji = EMOJIS[0];
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.emoji-opt').forEach((e,i)=>{ e.classList.toggle('sel',i===0); });
+  const old = document.getElementById('av-preview');
+  if (old.tagName==='IMG') old.outerHTML = `<div class="avatar-ph" id="av-preview" onclick="document.getElementById('av-file').click()">${EMOJIS[0]}</div>`;
+  else old.textContent = EMOJIS[0];
+}
+
+function deleteChar(id) {
+  if (!confirm('Hapus karakter ini?')) return;
+  characters = characters.filter(c=>c.id!==id); saveChars(); renderChars();
+}
+
+// ── SCENARIO ─────────────────────────────────────────
+function buildScenarioList() {
+  document.getElementById('scene-list').innerHTML = SCENARIOS.map(s =>
+    `<div class="scene-item" id="si-${s.id}" onclick="selectScenario('${s.id}')">
+      <div class="scene-title">${s.title}</div>
+      <div class="scene-desc">${s.desc}</div>
+    </div>`).join('')
+    + `<div class="scene-item${!activeScenario?' sel':''}" id="si-none" onclick="selectScenario(null)">
+      <div class="scene-title" style="color:var(--muted)">✕ Tanpa Skenario</div>
+      <div class="scene-desc">Percakapan bebas tanpa konteks khusus</div>
+    </div>`;
+}
+
+function selectScenario(id) {
+  activeScenario = id;
+  document.querySelectorAll('.scene-item').forEach(el=>el.classList.remove('sel'));
+  document.getElementById(id ? `si-${id}` : 'si-none')?.classList.add('sel');
+  closeScenario();
+  renderMessages();
+}
+
+// ── API KEY ───────────────────────────────────────────
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-ant-')) { alert('API key harus diawali dengan "sk-ant-"'); return; }
+  apiKey = val; localStorage.setItem('ac_apikey', apiKey);
+  closeSetup();
+  alert('API key tersimpan! ✓');
+}
+
+function toggleKey() {
+  const el = document.getElementById('api-key-input');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// ── OVERLAY HELPERS ───────────────────────────────────
+function openCreate() { document.getElementById('create-overlay').classList.add('open'); }
+function closeCreate(e) { if (!e || e.target.classList.contains('overlay')) document.getElementById('create-overlay').classList.remove('open'); }
+function openScenario() { buildScenarioList(); document.getElementById('scene-overlay').classList.add('open'); }
+function closeScenario(e) { if (!e || e.target.classList.contains('overlay')) document.getElementById('scene-overlay').classList.remove('open'); }
+function showSetup() { document.getElementById('setup-overlay').classList.add('open'); }
+function closeSetup(e) { if (!e || e.target.classList.contains('overlay')) document.getElementById('setup-overlay').classList.remove('open'); }
+
+// ── SCREEN NAV ────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function scrollBottom() {
+  const el = document.getElementById('messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+  document.getElementById('send-btn').disabled = !el.value.trim();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
